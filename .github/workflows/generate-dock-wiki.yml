@@ -19,10 +19,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: yarn
 
       - name: Generate documentation
-        run: npm run generate-doc
+        run: yarn generate-doc
 
       - name: Upload Documentation to Wiki
         uses: SwiftDocOrg/github-wiki-publish-action@v1
