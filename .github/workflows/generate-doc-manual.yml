@@ -1,0 +1,51 @@
+name: "Mirror doc/ to wiki"
+
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [15.x]
+        
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate documentation
+        run: npm run generate-doc
+
+      - name: Checkout main
+        uses: actions/checkout@v2
+
+      - name: Checkout wiki
+        uses: actions/checkout@v2
+        with:
+          repository: "adeyiwunmi/test-wiki.wiki"
+      - name: Copy files
+        run: |
+          echo $GITHUB_WORKSPACE
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Wiki mirror"
+          # DOCUMENTATION_PATH = ${WORKSPACE_URL/test-wiki\/test-wiki/test-wiki\/Documentation/classes}
+          # cp $GITHUB_WORKSPACE/Documentation $GITHUB_WORKSPACE/test-wiki.wiki
+          cp ${WORKSPACE_URL/test-wiki\/test-wiki/test-wiki\/Documentation\/classes} $GITHUB_WORKSPACE/test-wiki.wiki
+          cd $GITHUB_WORKSPACE/test-wiki.wiki
+          rename.ul -v .txt .md *.txt
+          git add .
+          # only commit if there are changes
+          # git diff-index --quiet HEAD -- || git commit -m "sync from doc/"
+          git push
